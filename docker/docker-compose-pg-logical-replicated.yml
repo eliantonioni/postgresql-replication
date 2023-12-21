@@ -1,0 +1,40 @@
+version: '3.5'
+
+services:
+
+  db-master-logical:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: postgres-db-master-logical
+    volumes:
+      - ./db-data-master-logical:/var/lib/postgresql/data
+      - ./init-master_2.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./custom_master_pg_hba_2.conf:/etc/custom_pg_hba.conf:ro
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: pass
+    ports:
+      - 5432:5432
+    command: [
+      "-c", "hba_file=/etc/custom_pg_hba.conf",
+      "-c", "wal_level=logical"
+    ]
+
+  db-slave-logical:
+    stdin_open: true
+    tty: true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: postgres-db-slave-logical
+    volumes:
+      - ./db-data-slave-logical:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: pass
+    ports:
+      - 5433:5432
+
+volumes:
+  db-data-master-logical:
+  db-data-slave-logical:
